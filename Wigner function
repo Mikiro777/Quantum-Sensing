@@ -1,0 +1,125 @@
+% Plot the Wigner function for the corresponding density matrix (Especially for vacuum state, thermal state and coherent state here.)
+clear; clc; close all;
+N = 5;          % Determine the maximum value of the number state     
+n_photon = 0:N;          % number state basis
+n_env = 1;            % mean photon numbers of thermal state
+n_bar = 0.5;          % mean photon numbers of probe state
+thermal = n_env.^n_photon./(n_env+1).^(n_photon+1);
+DM_th = diag(thermal)/sum(thermal);          % density matrix of thermal state
+Coh_cn = exp(-n_bar/2)*sqrt(n_bar).^n_photon./sqrt(factorial(n_photon));
+Coh_cn = Coh_cn/sqrt(sum(abs(Coh_cn).^2));
+vac = exp(-0/2)*sqrt(0).^n_photon./sqrt(factorial(n_photon));          % vacuum state state vector
+DM_vac = vac'*vac;          % density matrix of vacuum state
+DM_coh = Coh_cn'*Coh_cn;          % density matrix of coherent state
+
+XX = 50;
+x_rg = 5;
+p_rg = 5;
+x_offset = 0;
+p_offset = 0;
+dx = x_rg/XX;
+dp = p_rg/XX;
+[X,P] = meshgrid(-x_rg/2+x_offset:dx:x_rg/2+x_offset,-p_rg/2+p_offset:dp:p_rg/2+p_offset);
+W_xp_vac = zeros(XX+1,XX+1);
+W_xp_th = zeros(XX+1,XX+1);
+W_xp_coh = zeros(XX+1,XX+1);
+
+% The equation for transforming the density matrix expressed in Fock basis to Wigner function
+for n = 0:N
+    for m = 0:N
+        if n>=m    
+            Wmn = 1/pi*exp(-2*X.^2-2*P.^2).*(-1).^m.*sqrt(2^(n-m).*factorial(m)./factorial(n)).*(X*sqrt(2)-1i*P*sqrt(2)).^(n-m).*laguerreL(m,n-m,4*X.^2+4*P.^2);
+        else
+            Wmn = 1/pi*exp(-2*X.^2-2*P.^2).*(-1).^n.*sqrt(2^(m-n).*factorial(n)./factorial(m)).*(X*sqrt(2)+1i*P*sqrt(2)).^(m-n).*laguerreL(n,m-n,4*X.^2+4*P.^2);
+        end
+         W_xp_vac = DM_vac(n+1,m+1)*Wmn+W_xp_vac; 
+         W_xp_th = DM_th(n+1,m+1)*Wmn+W_xp_th; 
+         W_xp_coh = DM_coh(n+1,m+1)*Wmn+W_xp_coh;
+    end
+end
+% only need the real part for plotting
+real_vac = real(W_xp_vac)*10;
+real_th = real(W_xp_th)*10;
+real_coh = real(W_xp_coh)*10;
+
+% Plot Wigner function & corresponding density matrix
+figure(1)
+surf(X,P,real(W_xp_vac)*10,'FaceAlpha',0.8)
+hYLabel = get(gca,'YLabel');
+set(hYLabel,'rotation',0)
+set(gca,'Fontsize',20)
+shading interp
+axis equal
+view(2)
+%title('Vacuum state Wigner function')
+xlabel('X')
+ylabel('P')
+colorbar
+clim([0 3])
+
+figure(2)
+b3 = bar3(flipud(DM_vac),1);
+title('Vacuum state Density matrix')
+set(gca,'Fontsize',20,'XTickLabel',n_photon,'YTickLabel',flip(n_photon))
+set(b3,'EdgeAlpha',0.5,'FaceColor','interp','FaceAlpha',1)
+axis equal
+colorbar
+view(2)
+for k = 1:length(b3)
+    zdata = b3(k).ZData;
+    b3(k).CData = zdata;
+end
+
+figure(3)
+surf(X,P,real(W_xp_th)*10,'FaceAlpha',0.8)
+hYLabel = get(gca,'YLabel');
+set(hYLabel,'rotation',0)
+set(gca,'Fontsize',20)
+shading interp
+axis equal
+view(2)
+%title('Thermal state Wigner function')
+xlabel('X')
+ylabel('P')
+colorbar
+clim([0 1])
+
+figure(4)
+b3 = bar3(flipud(DM_th),1);
+title('Thermal state Density matrix')
+set(gca,'Fontsize',20,'XTickLabel',n_photon,'YTickLabel',flip(n_photon))
+set(b3,'EdgeAlpha',0.5,'FaceColor','interp','FaceAlpha',1)
+axis equal
+colorbar
+view(2)
+for k = 1:length(b3)
+    zdata = b3(k).ZData;
+    b3(k).CData = zdata;
+end
+
+figure(5)
+surf(X,P,real(W_xp_coh)*10,'FaceAlpha',0.8)
+hYLabel = get(gca,'YLabel');
+set(hYLabel,'rotation',0)
+set(gca,'Fontsize',20)
+shading interp
+axis equal
+view(2)
+title('Coherent state Wigner function')
+xlabel('X')
+ylabel('P')
+colorbar
+clim([0 3])
+
+figure(6)
+b3 = bar3(flipud(DM_coh),1);
+title('Coherent state Density matrix')
+set(gca,'Fontsize',20,'XTickLabel',n_photon,'YTickLabel',flip(n_photon))
+set(b3,'EdgeAlpha',0.5,'FaceColor','interp','FaceAlpha',1)
+axis equal
+colorbar
+view(2)
+for k = 1:length(b3)
+    zdata = b3(k).ZData;
+    b3(k).CData = zdata;
+end
