@@ -1,7 +1,7 @@
-% This function considers an beamsplitter process tensor to calculate the 
+% This function considers an beamsplitter process tensor to calculate the
 % single-mode output quantum state. The output of the function is error probability in hypothesis testing. 
 
-function [P_err] = Process_BS_SM(x)
+function [P_err] = Process_BS_SM(x) 
 global N n_photon r DM_bg p0 BS_pt DMout2 DM_out
 Coh_cn_0 = exp(-0/2)*sqrt(0).^n_photon./sqrt(factorial(n_photon)); % coherent state
 DM_coh_0 = Coh_cn_0'*Coh_cn_0;
