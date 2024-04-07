@@ -1,0 +1,112 @@
+% This function considers an beamsplitter process tensor to calculate the 
+% single-mode output quantum state. The output of the function is error probability in hypothesis testing. 
+
+function [P_err] = Process_BS_SM(x)
+global N n_photon r DM_bg p0 BS_pt DMout2 DM_out
+Coh_cn_0 = exp(-0/2)*sqrt(0).^n_photon./sqrt(factorial(n_photon)); % coherent state
+DM_coh_0 = Coh_cn_0'*Coh_cn_0;
+
+DM_in = x'*x;
+
+for m1 = 1:N+1
+    for n1 = 1:N+1
+        for m2 = 1:N+1
+            for n2 = 1:N+1
+                DM_input(m1,n1,m2,n2) = DM_in(m1,n1)*DM_bg(m2,n2);
+            end
+        end
+    end
+end
+
+for j1 = 1:N+1
+    for k1 = 1:N+1
+        for j2 = 1:N+1
+            for k2 = 1:N+1
+                ro_out(j1,k1,j2,k2) = sum(sum(sum(sum(BS_pt(:,:,:,:,j1,k1,j2,k2).*(DM_input))))); % output state
+            end
+        end
+    end
+end
+
+for j = 1:N+1
+    for k = 1:N+1
+        DM_out(1+(N+1)*(j-1):N+1+(N+1)*(j-1),1+(N+1)*(k-1):N+1+(N+1)*(k-1)) = squeeze(ro_out(j,k,:,:));
+    end
+end
+for j = 1:N+1
+    for k = 1:N+1
+        DM_input1(1+(N+1)*(j-1):N+1+(N+1)*(j-1),1+(N+1)*(k-1):N+1+(N+1)*(k-1)) = squeeze(DM_input(j,k,:,:));
+    end
+end
+
+
+DMout2 = PartialTrace(DM_out,1);
+DMout1 = PartialTrace(DM_out,2);
+
+% trace(DMout2)
+% trace(DMout1)
+
+% figure(100)
+% subplot(2,2,1)
+% b=bar3(DMout1,1);
+% title(['T-mode '])
+% set(gca,'XTickLabel',n_photon,'YTickLabel',n_photon)
+% set(b,'EdgeAlpha',0.5,'FaceColor','interp','FaceAlpha',0.5)
+% axis equal
+% view(2)
+% colorbar
+% for k = 1:length(b)
+%     zdata = b(k).ZData;
+%     b(k).CData = zdata;
+% end
+% subplot(2,2,2)
+% b=bar3(DMout2,1);
+% title(['R-mode '])
+% set(gca,'XTickLabel',n_photon,'YTickLabel',n_photon)
+% set(b,'EdgeAlpha',0.5,'FaceColor','interp','FaceAlpha',0.5)
+% axis equal
+% colorbar
+% view(2)
+% for k = 1:length(b)
+%     zdata = b(k).ZData;
+%     b(k).CData = zdata;
+% end
+% subplot(2,2,[3 4])
+% bar(n_photon,diag(DMout1),'Facecolor',[0.1 0.2 0.4],'Facealpha',0.7,'Edgealpha',0.0)
+% hold on
+% subplot(2,2,[3 4])
+% plot(n_photon,diag(DMout2),'s--','linewidth',2,'color',[0.7 0.5 0.1 0.7])
+% hold off
+
+% 
+% figure(101)
+% subplot(2,1,1)
+% b=bar3(DM_input1,1);
+% title(['Total quantum state input'])
+% set(gca,'XTickLabel',n_photon,'YTickLabel',n_photon)
+% set(b,'EdgeAlpha',0.5,'FaceColor','interp','FaceAlpha',0.5)
+% axis equal
+% view(2)
+% colorbar
+% for k = 1:length(b)
+%     zdata = b(k).ZData;
+%     b(k).CData = zdata;
+% end
+% subplot(2,1,2)
+% b=bar3(DM_out,1);
+% title(['Total quantum state output'])
+% set(gca,'XTickLabel',n_photon,'YTickLabel',n_photon)
+% set(b,'EdgeAlpha',0.5,'FaceColor','interp','FaceAlpha',0.5)
+% axis equal
+% view(2)
+% colorbar
+% for k = 1:length(b)
+%     zdata = b(k).ZData;
+%     b(k).CData = zdata;
+% end
+DMout2;
+
+
+
+P_err = abs(1-trace(sqrtm(((1-p0)*DMout2-p0*DM_bg)*((1-p0)*DMout2-p0*DM_bg)')))/2;
+end
